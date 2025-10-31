@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Brain, Plus, Save, FolderOpen, Share, Download, Copy, Code, FileText, GitBranch } from 'lucide-react';
 import BlocklyEditor from './BlocklyEditor';
 import OutputViewer from './OutputViewer';
+import AIReflection from './AIReflection';
+import { exportService } from './ExportService';
 
 export default function ThinkingBlocksApp() {
   const [activeView, setActiveView] = useState<'text' | 'json' | 'mindmap'>('text');
@@ -21,6 +23,35 @@ export default function ThinkingBlocksApp() {
     research: { name: '研究', color: 'from-green-400 to-blue-400' },
     education: { name: '教育', color: 'from-yellow-400 to-orange-400' }
   };
+
+  useEffect(() => {
+    // キーボードショートカット
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.ctrlKey || event.metaKey) {
+        switch (event.key) {
+          case 's':
+            event.preventDefault();
+            handleSave();
+            break;
+          case 'o':
+            event.preventDefault();
+            handleLoad();
+            break;
+          case 'e':
+            event.preventDefault();
+            handleShare();
+            break;
+          case 'n':
+            event.preventDefault();
+            window.location.reload();
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [workspace, outputData, currentTheme]);
 
   const handleWorkspaceChange = (newWorkspace: any) => {
     setWorkspace(newWorkspace);
@@ -123,33 +154,169 @@ export default function ThinkingBlocksApp() {
   };
 
   const handleLoad = () => {
-    const saved = localStorage.getItem('thinking-blocks-save');
-    if (saved && workspace) {
-      try {
-        const data = JSON.parse(saved);
-        workspace.clear();
-        workspace.fromJSON(JSON.parse(data.workspace));
-        setCurrentTheme(data.theme);
-        
-        alert('思考構造を読み込みました！');
-      } catch (error) {
-        alert('保存データの読み込みに失敗しました。');
+    // ファイルから読み込み
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json,.xml,.md';
+    input.onchange = (event) => {
+      const file = (event.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const content = e.target?.result as string;
+            
+            if (file.name.endsWith('.json')) {
+              const data = JSON.parse(content);
+              if (data.workspace) {
+                // 従来の保存形式
+                workspace?.clear();
+                workspace?.fromJSON(JSON.parse(data.workspace));
+                setCurrentTheme(data.theme || 'creative');
+              } else if (data.thinking_structure) {
+                // 新しいエクスポート形式
+                loadFromExportedData(data);
+              }
+            } else if (file.name.endsWith('.xml')) {
+              // Blockly XML形式
+              workspace?.clear();
+              const xml = content;
+              workspace?.fromXML(xml);
+            }
+            
+            alert(`${file.name} を読み込みました！`);
+          } catch (error) {
+            alert('ファイルの読み込みに失敗しました。形式を確認してください。');
+          }
+        };
+        reader.readAsText(file);
       }
-    } else {
-      alert('保存されたデータがありません。');
+    };
+    input.click();
+  };
+
+  const loadTemplate = (templateTheme: string) => {
+    if (!workspace) return;
+    
+    setCurrentTheme(templateTheme);
+    workspace.clear();
+    
+    // テーマに応じたテンプレートブロックを作成
+    const templates: { [key: string]: any[] } = {
+      creative: [
+        { type: 'thinking_why', text: 'アイデアを形にしたい', x: 50, y: 50 },
+        { type: 'thinking_how', text: 'プロトタイプを作る', x: 50, y: 120 },
+        { type: 'thinking_what', text: '革新的なプロダクトを生み出す', x: 50, y: 190 },
+        { type: 'thinking_observe', text: '市場には同様のソリューションが少ない', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: 'ユーザーフィードバックを積極的に取り入れる', x: 300, y: 120 }
+      ],
+      introspection: [
+        { type: 'thinking_why', text: '自分自身をより深く理解したい', x: 50, y: 50 },
+        { type: 'thinking_how', text: '日記を書き、瞑想する', x: 50, y: 120 },
+        { type: 'thinking_what', text: '真の自分を発見する', x: 50, y: 190 },
+        { type: 'thinking_observe', text: '感情の変化に注意を払う', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: 'パターンと傾向を認識する', x: 300, y: 120 }
+      ],
+      research: [
+        { type: 'thinking_why', text: '問題を科学的に解決したい', x: 50, y: 50 },
+        { type: 'thinking_how', text: '仮説を立て、実験で検証する', x: 50, y: 120 },
+        { type: 'thinking_what', text: '信頼性の高い結論を得る', x: 50, y: 190 },
+        { type: 'thinking_observe', text: 'データに一定のパターンが見える', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: '研究手法の改善点を考える', x: 300, y: 120 }
+      ],
+      education: [
+        { type: 'thinking_why', text: '学習者の理解を深めたい', x: 50, y: 50 },
+        { type: 'thinking_how', text: '体験型学習を導入する', x: 50, y: 120 },
+        { type: 'thinking_what', text: '生涯学習者を育成する', x: 50, y: 190 },
+        { type: 'thinking_observe', text: '従来の講義形式では集中力が続かない', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: '個々の学習スタイルに合わせる必要がある', x: 300, y: 120 }
+      ]
+    };
+
+    const currentTemplate = templates[templateTheme] || templates.creative;
+    const blocks: any[] = [];
+
+    // ブロックを作成
+    currentTemplate.forEach((blockData, index) => {
+      const block = workspace.newBlock(blockData.type);
+      block.setFieldValue(blockData.text, 'TEXT');
+      block.moveBy(blockData.x, blockData.y);
+      block.initSvg();
+      block.render();
+      blocks.push(block);
+    });
+
+    // WHY-HOW-WHATの接続
+    if (blocks.length >= 3 && window.Blockly) {
+      const whyBlock = blocks[0];
+      const howBlock = blocks[1];
+      const whatBlock = blocks[2];
+
+      const whyConnection = whyBlock.nextConnection;
+      const howPrevConnection = howBlock.previousConnection;
+      const howNextConnection = howBlock.nextConnection;
+      const whatConnection = whatBlock.previousConnection;
+
+      if (whyConnection && howPrevConnection) {
+        whyConnection.connect(howPrevConnection);
+      }
+      if (howNextConnection && whatConnection) {
+        howNextConnection.connect(whatConnection);
+      }
+    }
+
+    // OBSERVE-REFLECTの接続
+    if (blocks.length >= 5) {
+      const observeBlock = blocks[3];
+      const reflectBlock = blocks[4];
+
+      const observeConnection = observeBlock.nextConnection;
+      const reflectConnection = reflectBlock.previousConnection;
+
+      if (observeConnection && reflectConnection) {
+        observeConnection.connect(reflectConnection);
+      }
+    }
+
+    alert(`${templateTheme}テンプレートを読み込みました！`);
+  };
+
+  const loadFromExportedData = (data: any) => {
+    if (!workspace || !data.thinking_structure?.blocks) return;
+    
+    workspace.clear();
+    
+    // ブロックを再作成
+    data.thinking_structure.blocks.forEach((blockData: any) => {
+      const block = workspace.newBlock(blockData.type);
+      block.setFieldValue(blockData.text, 'TEXT');
+      block.moveBy(blockData.position?.x || 0, blockData.position?.y || 0);
+      block.initSvg();
+      block.render();
+    });
+    
+    if (data.metadata?.theme) {
+      setCurrentTheme(data.metadata.theme);
     }
   };
 
   const handleShare = () => {
-    const shareData = {
-      text: outputData.text,
-      json: outputData.json,
-      theme: currentTheme
-    };
+    // 高度なシェア機能
+    const timestamp = new Date().getTime();
     
-    navigator.clipboard.writeText(JSON.stringify(shareData, null, 2))
-      .then(() => alert('共有データをクリップボードにコピーしました！'))
-      .catch(() => alert('コピーに失敗しました。'));
+    // Markdownエクスポート
+    const markdown = exportService.exportAsMarkdown(outputData, currentTheme);
+    exportService.downloadFile(markdown, `思考構造_${timestamp}.md`, 'text/markdown');
+    
+    // JSONエクスポート
+    const jsonData = exportService.exportAsJSON(outputData, currentTheme);
+    exportService.downloadFile(jsonData, `思考構造_${timestamp}.json`, 'application/json');
+    
+    // SVGエクスポート
+    const svgData = exportService.exportAsSVG(outputData.blocks, currentTheme);
+    exportService.downloadFile(svgData, `思考構造_${timestamp}.svg`, 'image/svg+xml');
+    
+    alert('Markdown、JSON、SVGファイルをダウンロードしました！');
   };
 
   return (
@@ -180,6 +347,43 @@ export default function ThinkingBlocksApp() {
                 <Plus className="w-4 h-4" />
                 <span>新規作成</span>
               </button>
+              
+              <div className="relative group">
+                <button className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                  <FileText className="w-4 h-4" />
+                  <span>テンプレート</span>
+                </button>
+                
+                {/* テンプレート ドロップダウン */}
+                <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                  <div className="p-1">
+                    <button
+                      onClick={() => loadTemplate('creative')}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-900 rounded-md transition-colors"
+                    >
+                      🎨 創造テンプレート
+                    </button>
+                    <button
+                      onClick={() => loadTemplate('introspection')}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-900 rounded-md transition-colors"
+                    >
+                      🪞 内省テンプレート
+                    </button>
+                    <button
+                      onClick={() => loadTemplate('research')}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-900 rounded-md transition-colors"
+                    >
+                      🔬 研究テンプレート
+                    </button>
+                    <button
+                      onClick={() => loadTemplate('education')}
+                      className="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-900 rounded-md transition-colors"
+                    >
+                      🎓 教育テンプレート
+                    </button>
+                  </div>
+                </div>
+              </div>
               
               <button
                 onClick={handleSave}
@@ -327,21 +531,13 @@ export default function ThinkingBlocksApp() {
       {/* Footer: Reflection Area */}
       <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="bg-white/60 backdrop-blur-sm rounded-2xl shadow-lg border border-orange-200/50 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center space-x-2">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
             <div className="p-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg">
               <Brain className="w-4 h-4 text-white" />
             </div>
-            <span>思考の振り返り</span>
+            <span>AI思考アシスタント</span>
           </h3>
-          <div className="bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg p-4">
-            <p className="text-gray-600 text-sm leading-relaxed">
-              思考構造を組み立てると、ここに振り返りのヒントが表示されます...
-              <br />
-              <span className="text-gray-500">
-                WHY（なぜ）から始めて、HOW（どのように）を経て、WHAT（何を）に至る思考の流れを観察してみましょう。
-              </span>
-            </p>
-          </div>
+          <AIReflection outputData={outputData} theme={currentTheme} />
         </div>
       </footer>
     </div>
