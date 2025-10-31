@@ -48,14 +48,29 @@ export default function BlocklyEditor({ onWorkspaceChange, theme }: BlocklyEdito
       contents: [
         {
           kind: 'category',
-          name: '思考ブロック',
+          name: '基本思考ブロック',
           colour: '#FFD54F',
           contents: [
             { kind: 'block', type: 'thinking_why' },
             { kind: 'block', type: 'thinking_how' },
-            { kind: 'block', type: 'thinking_what' },
+            { kind: 'block', type: 'thinking_what' }
+          ]
+        },
+        {
+          kind: 'category',
+          name: '観察・振り返り',
+          colour: '#FFB74D',
+          contents: [
             { kind: 'block', type: 'thinking_observe' },
             { kind: 'block', type: 'thinking_reflect' }
+          ]
+        },
+        {
+          kind: 'category',
+          name: '接続・関連',
+          colour: '#9575CD',
+          contents: [
+            { kind: 'block', type: 'thinking_connect' }
           ]
         }
       ]
@@ -95,71 +110,136 @@ export default function BlocklyEditor({ onWorkspaceChange, theme }: BlocklyEdito
   const defineCustomBlocks = () => {
     if (!window.Blockly) return;
 
-    // WHYブロック
+    // WHYブロック（開始ブロック）
     window.Blockly.Blocks['thinking_why'] = {
       init: function() {
         this.appendDummyInput()
           .appendField('WHY')
           .appendField(new window.Blockly.FieldTextInput('なぜこれをしたいのか？'), 'TEXT');
-        this.setNextStatement(true, null);
+        this.setNextStatement(true, 'thinking_flow');
         this.setColour('#FFD54F');
-        this.setTooltip('動機や理由を記述します');
+        this.setTooltip('動機や理由を記述します（思考の開始点）');
         this.setHelpUrl('');
+        this.setDeletable(true);
+        this.setMovable(true);
       }
     };
 
-    // HOWブロック
+    // HOWブロック（中間ブロック）
     window.Blockly.Blocks['thinking_how'] = {
       init: function() {
         this.appendDummyInput()
           .appendField('HOW')
           .appendField(new window.Blockly.FieldTextInput('どのようにやるのか？'), 'TEXT');
-        this.setPreviousStatement(true, null);
-        this.setNextStatement(true, null);
+        this.setPreviousStatement(true, 'thinking_flow');
+        this.setNextStatement(true, 'thinking_flow');
         this.setColour('#81C784');
         this.setTooltip('手段やプロセスを記述します');
         this.setHelpUrl('');
+        this.setDeletable(true);
+        this.setMovable(true);
       }
     };
 
-    // WHATブロック
+    // WHATブロック（終了ブロック）
     window.Blockly.Blocks['thinking_what'] = {
       init: function() {
         this.appendDummyInput()
           .appendField('WHAT')
           .appendField(new window.Blockly.FieldTextInput('何を達成するのか？'), 'TEXT');
-        this.setPreviousStatement(true, null);
+        this.setPreviousStatement(true, 'thinking_flow');
         this.setColour('#64B5F6');
-        this.setTooltip('目的や成果を記述します');
+        this.setTooltip('目的や成果を記述します（思考の終着点）');
         this.setHelpUrl('');
+        this.setDeletable(true);
+        this.setMovable(true);
       }
     };
 
-    // OBSERVEブロック
+    // OBSERVEブロック（独立ブロック）
     window.Blockly.Blocks['thinking_observe'] = {
       init: function() {
         this.appendDummyInput()
           .appendField('OBSERVE')
           .appendField(new window.Blockly.FieldTextInput('現状はどうなっているか？'), 'TEXT');
-        this.setNextStatement(true, null);
+        this.setNextStatement(true, 'thinking_reflection');
         this.setColour('#FFB74D');
         this.setTooltip('現状や課題を観察します');
         this.setHelpUrl('');
+        this.setDeletable(true);
+        this.setMovable(true);
       }
     };
 
-    // REFLECTブロック
+    // REFLECTブロック（振り返りブロック）
     window.Blockly.Blocks['thinking_reflect'] = {
       init: function() {
         this.appendDummyInput()
           .appendField('REFLECT')
           .appendField(new window.Blockly.FieldTextInput('どう改善できるか？'), 'TEXT');
-        this.setPreviousStatement(true, null);
+        this.setPreviousStatement(true, 'thinking_reflection');
+        this.setNextStatement(true, 'thinking_reflection');
         this.setColour('#BA68C8');
         this.setTooltip('思考結果を振り返ります');
         this.setHelpUrl('');
+        this.setDeletable(true);
+        this.setMovable(true);
       }
     };
+
+    // CONNECTブロック（思考同士をつなぐ）
+    window.Blockly.Blocks['thinking_connect'] = {
+      init: function() {
+        this.appendDummyInput()
+          .appendField('CONNECT')
+          .appendField(new window.Blockly.FieldTextInput('関連性や繋がり'), 'TEXT');
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour('#9575CD');
+        this.setTooltip('思考同士の繋がりを記述します');
+        this.setHelpUrl('');
+        this.setDeletable(true);
+        this.setMovable(true);
+      }
+    };
+
+    // JavaScript生成器の定義
+    if (window.Blockly.JavaScript) {
+      window.Blockly.JavaScript['thinking_why'] = function(block: any) {
+        const text = block.getFieldValue('TEXT');
+        const nextBlock = window.Blockly.JavaScript.statementToCode(block, 'NEXT');
+        return `WHY("${text}")\n${nextBlock}`;
+      };
+
+      window.Blockly.JavaScript['thinking_how'] = function(block: any) {
+        const text = block.getFieldValue('TEXT');
+        const nextBlock = window.Blockly.JavaScript.statementToCode(block, 'NEXT');
+        return `  HOW("${text}")\n${nextBlock}`;
+      };
+
+      window.Blockly.JavaScript['thinking_what'] = function(block: any) {
+        const text = block.getFieldValue('TEXT');
+        return `    WHAT("${text}")\n`;
+      };
+
+      window.Blockly.JavaScript['thinking_observe'] = function(block: any) {
+        const text = block.getFieldValue('TEXT');
+        const nextBlock = window.Blockly.JavaScript.statementToCode(block, 'NEXT');
+        return `OBSERVE("${text}")\n${nextBlock}`;
+      };
+
+      window.Blockly.JavaScript['thinking_reflect'] = function(block: any) {
+        const text = block.getFieldValue('TEXT');
+        const nextBlock = window.Blockly.JavaScript.statementToCode(block, 'NEXT');
+        return `REFLECT("${text}")\n${nextBlock}`;
+      };
+
+      window.Blockly.JavaScript['thinking_connect'] = function(block: any) {
+        const text = block.getFieldValue('TEXT');
+        const nextBlock = window.Blockly.JavaScript.statementToCode(block, 'NEXT');
+        return `CONNECT("${text}")\n${nextBlock}`;
+      };
+    }
   };
 
   const getBlocklyTheme = (themeKey: string) => {
