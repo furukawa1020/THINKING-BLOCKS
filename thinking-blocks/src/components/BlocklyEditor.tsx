@@ -288,36 +288,82 @@ export default function BlocklyEditor({ onWorkspaceChange, theme }: BlocklyEdito
   const addInitialBlocks = () => {
     if (!workspace.current || !window.Blockly) return;
 
-    // デモ用の初期ブロック
-    const whyBlock = workspace.current.newBlock('thinking_why');
-    whyBlock.setFieldValue('人の考えを構造化したい', 'TEXT');
-    whyBlock.moveBy(50, 50);
-    whyBlock.initSvg();
-    whyBlock.render();
+    // テーマに応じた初期ブロックのテンプレート
+    const templates: { [key: string]: any[] } = {
+      creative: [
+        { type: 'thinking_why', text: 'アイデアを形にしたい', x: 50, y: 50 },
+        { type: 'thinking_how', text: 'プロトタイプを作る', x: 50, y: 120 },
+        { type: 'thinking_what', text: '革新的なプロダクトを生み出す', x: 50, y: 190 },
+        { type: 'thinking_observe', text: '市場には同様のソリューションが少ない', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: 'ユーザーフィードバックを積極的に取り入れる', x: 300, y: 120 }
+      ],
+      introspection: [
+        { type: 'thinking_why', text: '自分自身をより深く理解したい', x: 50, y: 50 },
+        { type: 'thinking_how', text: '日記を書き、瞑想する', x: 50, y: 120 },
+        { type: 'thinking_what', text: '真の自分を発見する', x: 50, y: 190 },
+        { type: 'thinking_observe', text: '感情の変化に注意を払う', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: 'パターンと傾向を認識する', x: 300, y: 120 }
+      ],
+      research: [
+        { type: 'thinking_why', text: '問題を科学的に解決したい', x: 50, y: 50 },
+        { type: 'thinking_how', text: '仮説を立て、実験で検証する', x: 50, y: 120 },
+        { type: 'thinking_what', text: '信頼性の高い結論を得る', x: 50, y: 190 },
+        { type: 'thinking_observe', text: 'データに一定のパターンが見える', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: '研究手法の改善点を考える', x: 300, y: 120 }
+      ],
+      education: [
+        { type: 'thinking_why', text: '学習者の理解を深めたい', x: 50, y: 50 },
+        { type: 'thinking_how', text: '体験型学習を導入する', x: 50, y: 120 },
+        { type: 'thinking_what', text: '生涯学習者を育成する', x: 50, y: 190 },
+        { type: 'thinking_observe', text: '従来の講義形式では集中力が続かない', x: 300, y: 50 },
+        { type: 'thinking_reflect', text: '個々の学習スタイルに合わせる必要がある', x: 300, y: 120 }
+      ]
+    };
 
-    const howBlock = workspace.current.newBlock('thinking_how');
-    howBlock.setFieldValue('ブロックで可視化する', 'TEXT');
-    howBlock.moveBy(50, 120);
-    howBlock.initSvg();
-    howBlock.render();
+    // 現在のテーマに応じたテンプレートを取得
+    const currentTemplate = templates[theme] || templates.creative;
+    const blocks: any[] = [];
 
-    const whatBlock = workspace.current.newBlock('thinking_what');
-    whatBlock.setFieldValue('思考プログラミング環境をつくる', 'TEXT');
-    whatBlock.moveBy(50, 190);
-    whatBlock.initSvg();
-    whatBlock.render();
+    // ブロックを作成
+    currentTemplate.forEach((blockData, index) => {
+      const block = workspace.current.newBlock(blockData.type);
+      block.setFieldValue(blockData.text, 'TEXT');
+      block.moveBy(blockData.x, blockData.y);
+      block.initSvg();
+      block.render();
+      blocks.push(block);
+    });
 
-    // ブロックを接続
-    const whyConnection = whyBlock.nextConnection;
-    const howConnection = howBlock.previousConnection;
-    const howNextConnection = howBlock.nextConnection;
-    const whatConnection = whatBlock.previousConnection;
+    // WHY-HOW-WHATの接続
+    if (blocks.length >= 3) {
+      const whyBlock = blocks[0];
+      const howBlock = blocks[1];
+      const whatBlock = blocks[2];
 
-    if (whyConnection && howConnection) {
-      whyConnection.connect(howConnection);
+      const whyConnection = whyBlock.nextConnection;
+      const howPrevConnection = howBlock.previousConnection;
+      const howNextConnection = howBlock.nextConnection;
+      const whatConnection = whatBlock.previousConnection;
+
+      if (whyConnection && howPrevConnection) {
+        whyConnection.connect(howPrevConnection);
+      }
+      if (howNextConnection && whatConnection) {
+        howNextConnection.connect(whatConnection);
+      }
     }
-    if (howNextConnection && whatConnection) {
-      howNextConnection.connect(whatConnection);
+
+    // OBSERVE-REFLECTの接続
+    if (blocks.length >= 5) {
+      const observeBlock = blocks[3];
+      const reflectBlock = blocks[4];
+
+      const observeConnection = observeBlock.nextConnection;
+      const reflectConnection = reflectBlock.previousConnection;
+
+      if (observeConnection && reflectConnection) {
+        observeConnection.connect(reflectConnection);
+      }
     }
   };
 
