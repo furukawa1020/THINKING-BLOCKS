@@ -1,0 +1,21 @@
+# Prometheus メトリクス設定
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # バックエンドメトリクス
+  - job_name: 'thinking-blocks-backend'
+    static_configs:
+      - targets: ['backend:8080']
+    metrics_path: '/api/v1/metrics'
+
+  # PostgreSQLメトリクス
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres:5432']
+
+  # Redisメトリクス
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
