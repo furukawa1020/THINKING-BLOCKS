@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THINKING BLOCKS - Program your way of thinking</title>
+    
+    <!-- Google Fonts for warm, rounded typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Blockly Library -->
+    <script src="https://unpkg.com/blockly/blockly.min.js"></script>
+    <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+    <script src="https://unpkg.com/blockly/msg/ja.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Header Bar -->
+    <header class="header-bar">
+        <div class="logo-section">
+            <h1 class="logo">
+                <i class="fas fa-brain"></i>
+                THINKING BLOCKS
+            </h1>
+            <p class="tagline">Program your way of thinking</p>
+        </div>
+        
+        <nav class="nav-section">
+            <button class="nav-btn" id="newBtn" title="新しい思考を開始">
+                <i class="fas fa-plus"></i>
+                <span>新規作成</span>
+            </button>
+            <button class="nav-btn" id="saveBtn" title="思考構造を保存">
+                <i class="fas fa-save"></i>
+                <span>保存</span>
+            </button>
+            <button class="nav-btn" id="loadBtn" title="保存した思考を読み込み">
+                <i class="fas fa-folder-open"></i>
+                <span>読み込み</span>
+            </button>
+            <button class="nav-btn" id="shareBtn" title="思考を共有">
+                <i class="fas fa-share-alt"></i>
+                <span>共有</span>
+            </button>
+            <select class="theme-select" id="themeSelect">
+                <option value="creative">創造</option>
+                <option value="introspection">内省</option>
+                <option value="research">研究</option>
+                <option value="education">教育</option>
+            </select>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="main-container">
+        <!-- Left Panel: Block Editor -->
+        <section class="left-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-cubes"></i> 思考ブロック</h2>
+                <p class="panel-subtitle">なぜ・どのように・何を の構造を組み立てる</p>
+            </div>
+            
+            <!-- Blockly Workspace -->
+            <div id="blocklyArea">
+                <div id="blocklyDiv"></div>
+            </div>
+            
+            <!-- Block Palette Info -->
+            <div class="block-info">
+                <div class="block-legend">
+                    <div class="legend-item">
+                        <div class="legend-color why-color"></div>
+                        <span>WHY - 動機・理由</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color how-color"></div>
+                        <span>HOW - 手段・方法</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color what-color"></div>
+                        <span>WHAT - 目的・成果</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color observe-color"></div>
+                        <span>OBSERVE - 観察</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color reflect-color"></div>
+                        <span>REFLECT - 振り返り</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Panel: Output Views -->
+        <section class="right-panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-eye"></i> 思考の可視化</h2>
+                <div class="view-tabs">
+                    <button class="tab-btn active" data-view="text">
+                        <i class="fas fa-code"></i> テキスト
+                    </button>
+                    <button class="tab-btn" data-view="json">
+                        <i class="fas fa-brackets-curly"></i> JSON
+                    </button>
+                    <button class="tab-btn" data-view="mindmap">
+                        <i class="fas fa-project-diagram"></i> マップ
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Text Output View -->
+            <div class="output-view active" id="textView">
+                <div class="output-header">
+                    <h3>思考構文</h3>
+                    <button class="copy-btn" id="copyTextBtn">
+                        <i class="fas fa-copy"></i> コピー
+                    </button>
+                </div>
+                <pre class="output-content" id="textOutput">
+思考ブロックを組み立てると、ここに構文が表示されます...
+
+例:
+WHY("人の考えを構造化したい")
+  HOW("ブロックで可視化する")
+    WHAT("思考プログラミング環境をつくる")
+OBSERVE("現状：考えが抽象的すぎる")
+REFLECT("より直感的な可視化を導入する必要がある")
+                </pre>
+            </div>
+            
+            <!-- JSON Output View -->
+            <div class="output-view" id="jsonView">
+                <div class="output-header">
+                    <h3>構造データ</h3>
+                    <button class="copy-btn" id="copyJsonBtn">
+                        <i class="fas fa-copy"></i> コピー
+                    </button>
+                </div>
+                <pre class="output-content" id="jsonOutput">
+{
+  "thinking_structure": {
+    "created_at": "2024-10-31",
+    "blocks": []
+  }
+}
+                </pre>
+            </div>
+            
+            <!-- Mind Map View -->
+            <div class="output-view" id="mindmapView">
+                <div class="output-header">
+                    <h3>思考マップ</h3>
+                    <button class="copy-btn" id="downloadMapBtn">
+                        <i class="fas fa-download"></i> 画像保存
+                    </button>
+                </div>
+                <canvas id="mindmapCanvas" class="mindmap-canvas"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Panel: Reflection & AI Support (Future) -->
+    <footer class="bottom-panel">
+        <div class="reflection-area">
+            <div class="reflection-header">
+                <h3><i class="fas fa-lightbulb"></i> 思考の振り返り</h3>
+            </div>
+            <div class="reflection-content" id="reflectionLog">
+                <p class="reflection-placeholder">
+                    思考構造を組み立てると、ここに振り返りのヒントが表示されます...
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Hidden File Input for Loading -->
+    <input type="file" id="fileInput" accept=".json,.xml" style="display: none;">
+
+    <!-- Custom JavaScript -->
+    <script src="js/blocks.js"></script>
+    <script src="js/workspace.js"></script>
+    <script src="js/output.js"></script>
+    <script src="js/mindmap.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
