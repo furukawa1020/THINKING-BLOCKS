@@ -82,6 +82,19 @@ docker build -t thinking-blocks-backend ./backend
 
 ## トラブルシューティング
 
+### Node.jsバージョンエラー
+```
+You are using Node.js 18.x.x. For Next.js, Node.js version ">=20.9.0" is required.
+```
+
+**解決方法:**
+1. Node.js 20以上をインストール: https://nodejs.org/
+2. または、nvmを使用してバージョンを切り替え:
+   ```bash
+   nvm install 20
+   nvm use 20
+   ```
+
 ### Lintエラー
 - ESLint設定を確認: `eslint.config.mjs`
 - Next.js Lintを実行: `npm run lint -- --fix`

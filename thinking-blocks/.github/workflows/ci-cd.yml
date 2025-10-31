@@ -18,6 +18,11 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
   # フロントエンドのテストとビルド
   frontend:
@@ -48,6 +53,7 @@ jobs:
       with:
         name: frontend-build
         path: .next/
+        if-no-files-found: warn
       if: success()
 
   # バックエンドのテストとビルド
@@ -87,16 +93,7 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: '1.21'
-    
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/go/pkg/mod
-          ~/.cache/go-build
-        key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+        cache-dependency-path: backend/go.sum
     
     - name: Install dependencies
       working-directory: ./backend
