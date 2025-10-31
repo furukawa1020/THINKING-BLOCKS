@@ -34,7 +34,7 @@ func setupTestDB() (*gorm.DB, error) {
 func setupTestRouter() (*gin.Engine, *api.Handler) {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	
+
 	db, _ := setupTestDB()
 	handler := api.NewHandler(db, nil)
 
@@ -101,7 +101,7 @@ func TestGetProjects(t *testing.T) {
 
 func TestGetProject(t *testing.T) {
 	router, handler := setupTestRouter()
-	
+
 	// プロジェクト作成
 	router.POST("/api/v1/projects", handler.CreateProject)
 	project := map[string]interface{}{
@@ -130,14 +130,14 @@ func TestGetProject(t *testing.T) {
 	var getResponse map[string]interface{}
 	json.Unmarshal(w2.Body.Bytes(), &getResponse)
 	assert.True(t, getResponse["success"].(bool))
-	
+
 	getData := getResponse["data"].(map[string]interface{})
 	assert.Equal(t, projectID, getData["id"])
 }
 
 func TestUpdateProject(t *testing.T) {
 	router, handler := setupTestRouter()
-	
+
 	// プロジェクト作成
 	router.POST("/api/v1/projects", handler.CreateProject)
 	project := map[string]interface{}{
@@ -175,7 +175,7 @@ func TestUpdateProject(t *testing.T) {
 
 func TestDeleteProject(t *testing.T) {
 	router, handler := setupTestRouter()
-	
+
 	// プロジェクト作成
 	router.POST("/api/v1/projects", handler.CreateProject)
 	project := map[string]interface{}{
