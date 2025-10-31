@@ -5,6 +5,18 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+  workflow_dispatch:
+    inputs:
+      run_security_scan:
+        description: 'Run security scan'
+        required: false
+        default: 'true'
+        type: boolean
+      run_docker_build:
+        description: 'Build Docker images'
+        required: false
+        default: 'false'
+        type: boolean
 
 jobs:
   # フロントエンドのテストとビルド
