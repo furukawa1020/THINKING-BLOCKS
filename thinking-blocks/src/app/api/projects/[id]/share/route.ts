@@ -17,10 +17,10 @@ const shareLinks = new Map<string, ShareLink>();
 // POST /api/projects/[id]/share - 共有リンクの生成
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id;
+    const { id: projectId } = await params;
     const body = await request.json();
 
     const token = generateShareToken();
@@ -61,10 +61,10 @@ export async function POST(
 // GET /api/projects/[id]/share - プロジェクトの共有リンク一覧
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id;
+    const { id: projectId } = await params;
     
     const projectShareLinks = Array.from(shareLinks.values())
       .filter(link => link.projectId === projectId)

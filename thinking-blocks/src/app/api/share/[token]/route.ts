@@ -17,10 +17,10 @@ const shareLinks = new Map<string, ShareLink>();
 // GET /api/share/[token] - 共有トークンからプロジェクトにアクセス
 export async function GET(
   request: NextRequest,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const token = params.token;
+    const { token } = await params;
     const shareLink = shareLinks.get(token);
 
     if (!shareLink) {
