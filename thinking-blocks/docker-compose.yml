@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # PostgreSQLデータベース
+  postgres:
+    image: postgres:16-alpine
+    container_name: thinking-blocks-db
+    environment:
+      POSTGRES_DB: thinking_blocks
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redisキャッシュ
+  redis:
+    image: redis:7-alpine
+    container_name: thinking-blocks-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Goバックエンド
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: thinking-blocks-backend
+    environment:
+      - DATABASE_URL=postgres://postgres:postgres@postgres:5432/thinking_blocks?sslmode=disable
+      - REDIS_URL=redis:6379
+      - PORT=8080
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-in-production}
+      - ENVIRONMENT=production
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Next.jsフロントエンド
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: thinking-blocks-frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080/api/v1
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:

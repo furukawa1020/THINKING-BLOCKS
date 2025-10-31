@@ -55,7 +55,7 @@ func (h *Hub) Run() {
 					delete(projectClients, client)
 					close(client.send)
 					log.Printf("Client unregistered from project %s, remaining: %d", client.projectID, len(projectClients))
-					
+
 					if len(projectClients) == 0 {
 						delete(h.clients, client.projectID)
 					}

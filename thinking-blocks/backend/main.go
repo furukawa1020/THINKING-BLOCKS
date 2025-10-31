@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"thinking-blocks-backend/api"
-	"thinking-blocks-backend/config"
 	"thinking-blocks-backend/database"
 	"thinking-blocks-backend/websocket"
 
@@ -49,7 +48,7 @@ func main() {
 	// ヘルスチェック
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"status": "ok",
+			"status":  "ok",
 			"service": "thinking-blocks-backend",
 		})
 	})
@@ -65,7 +64,7 @@ func main() {
 			projects.GET("/:id", apiHandler.GetProject)
 			projects.PUT("/:id", apiHandler.UpdateProject)
 			projects.DELETE("/:id", apiHandler.DeleteProject)
-			
+
 			// 共有機能
 			projects.POST("/:id/share", apiHandler.CreateShareLink)
 			projects.GET("/:id/share", apiHandler.GetShareLinks)

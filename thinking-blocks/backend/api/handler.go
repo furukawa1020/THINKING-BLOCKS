@@ -76,14 +76,14 @@ func (h *Handler) GetProject(c *gin.Context) {
 // CreateProject - プロジェクト作成
 func (h *Handler) CreateProject(c *gin.Context) {
 	var input struct {
-		Title         string   `json:"title" binding:"required"`
-		Description   string   `json:"description"`
+		Title         string          `json:"title" binding:"required"`
+		Description   string          `json:"description"`
 		Content       json.RawMessage `json:"content" binding:"required"`
-		Theme         string   `json:"theme"`
-		Owner         string   `json:"owner"`
-		IsPublic      bool     `json:"is_public"`
-		Collaborators []string `json:"collaborators"`
-		Tags          []string `json:"tags"`
+		Theme         string          `json:"theme"`
+		Owner         string          `json:"owner"`
+		IsPublic      bool            `json:"is_public"`
+		Collaborators []string        `json:"collaborators"`
+		Tags          []string        `json:"tags"`
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -357,7 +357,7 @@ func (h *Handler) GetAnalytics(c *gin.Context) {
 }
 
 // 認証関連（スタブ実装）
-func (h *Handler) Register(c *gin.Context)        { c.JSON(200, gin.H{"message": "Not implemented"}) }
-func (h *Handler) Login(c *gin.Context)           { c.JSON(200, gin.H{"message": "Not implemented"}) }
-func (h *Handler) Logout(c *gin.Context)          { c.JSON(200, gin.H{"message": "Not implemented"}) }
-func (h *Handler) GetCurrentUser(c *gin.Context)  { c.JSON(200, gin.H{"message": "Not implemented"}) }
+func (h *Handler) Register(c *gin.Context)       { c.JSON(200, gin.H{"message": "Not implemented"}) }
+func (h *Handler) Login(c *gin.Context)          { c.JSON(200, gin.H{"message": "Not implemented"}) }
+func (h *Handler) Logout(c *gin.Context)         { c.JSON(200, gin.H{"message": "Not implemented"}) }
+func (h *Handler) GetCurrentUser(c *gin.Context) { c.JSON(200, gin.H{"message": "Not implemented"}) }
