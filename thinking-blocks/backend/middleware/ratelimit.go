@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -29,7 +30,7 @@ func RateLimiter(requestsPerSecond int) gin.HandlerFunc {
 func Timeout(timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := c.Request.Context()
-		timeoutCtx, cancel := time.WithTimeout(ctx, timeout)
+		timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
 		defer cancel()
 
 		c.Request = c.Request.WithContext(timeoutCtx)

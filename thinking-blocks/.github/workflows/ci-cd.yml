@@ -117,8 +117,7 @@ jobs:
       with:
         files: ./backend/coverage.out
         flags: backend
-        token: ${{ secrets.CODECOV_TOKEN }}
-      if: always()
+      if: false
       continue-on-error: true
     
     - name: Build

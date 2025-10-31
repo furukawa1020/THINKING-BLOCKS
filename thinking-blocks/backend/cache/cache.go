@@ -112,6 +112,9 @@ func (c *Cache) GetOrSet(key string, dest interface{}, expiration time.Duration,
 	}
 
 	// destに値をコピー
-	json, _ := json.Marshal(value)
-	return json.Unmarshal(json, dest)
+	jsonData, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(jsonData, dest)
 }
