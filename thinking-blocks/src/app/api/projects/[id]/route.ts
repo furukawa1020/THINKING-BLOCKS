@@ -7,10 +7,10 @@ const projects = new Map<string, Project>();
 // GET /api/projects/[id] - 特定プロジェクトの取得
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id;
+    const { id: projectId } = await params;
     const project = projects.get(projectId);
 
     if (!project) {
@@ -36,10 +36,10 @@ export async function GET(
 // PUT /api/projects/[id] - プロジェクトの更新
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id;
+    const { id: projectId } = await params;
     const project = projects.get(projectId);
 
     if (!project) {
@@ -82,10 +82,10 @@ export async function PUT(
 // DELETE /api/projects/[id] - プロジェクトの削除
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const projectId = params.id;
+    const { id: projectId } = await params;
     const project = projects.get(projectId);
 
     if (!project) {

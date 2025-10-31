@@ -8,22 +8,22 @@ Write-Host "=======================================" -ForegroundColor Cyan
 Write-Host ""
 
 # 関数定義
-function Print-Success {
+function Write-Success {
     param([string]$Message)
     Write-Host "✓ $Message" -ForegroundColor Green
 }
 
-function Print-Error {
+function Write-Failure {
     param([string]$Message)
     Write-Host "✗ $Message" -ForegroundColor Red
 }
 
-function Print-Warning {
+function Write-Warning {
     param([string]$Message)
     Write-Host "⚠ $Message" -ForegroundColor Yellow
 }
 
-function Print-Info {
+function Write-Info {
     param([string]$Message)
     Write-Host "ℹ $Message" -ForegroundColor White
 }
@@ -34,32 +34,36 @@ Write-Host "-------------------"
 
 try {
     $nodeVersion = node --version
-    Print-Success "Node.js: $nodeVersion"
+    Write-Success "Node.js: $nodeVersion"
 } catch {
-    Print-Error "Node.js がインストールされていません"
+    Write-Failure "Node.js がインストールされていません"
     exit 1
 }
 
 try {
     $npmVersion = npm --version
-    Print-Success "npm: $npmVersion"
+    Write-Success "npm: $npmVersion"
 } catch {
-    Print-Error "npm がインストールされていません"
+    Write-Failure "npm がインストールされていません"
     exit 1
 }
 
 try {
     $goVersion = go version
-    Print-Success "Go: $goVersion"
+    Write-Success "Go: $goVersion"
+    $goInstalled = $true
 } catch {
-    Print-Warning "Go がインストールされていません（バックエンドテストに必要）"
+    Write-Warning "Go がインストールされていません（バックエンドテストに必要）"
+    $goInstalled = $false
 }
 
 try {
     $dockerVersion = docker --version
-    Print-Success "Docker: $dockerVersion"
+    Write-Success "Docker: $dockerVersion"
+    $dockerInstalled = $true
 } catch {
-    Print-Warning "Docker がインストールされていません（コンテナビルドに必要）"
+    Write-Warning "Docker がインストールされていません（コンテナビルドに必要）"
+    $dockerInstalled = $false
 }
 
 Write-Host ""
@@ -68,40 +72,40 @@ Write-Host ""
 Write-Host "2️⃣  フロントエンドチェック" -ForegroundColor Yellow
 Write-Host "-------------------------"
 
-Print-Info "依存関係のインストール..."
+Write-Info "依存関係のインストール..."
 try {
     npm ci 2>&1 | Out-Null
-    Print-Success "依存関係インストール成功"
+    Write-Success "依存関係インストール成功"
 } catch {
-    Print-Error "依存関係のインストールに失敗しました"
+    Write-Failure "依存関係のインストールに失敗しました"
     exit 1
 }
 
-Print-Info "Lintチェック..."
+Write-Info "Lintチェック..."
 try {
     npm run lint 2>&1 | Out-Null
-    Print-Success "Lint: パス"
+    Write-Success "Lint: パス"
 } catch {
-    Print-Warning "Lint: 警告またはエラーがあります"
+    Write-Warning "Lint: 警告またはエラーがあります"
     npm run lint
 }
 
-Print-Info "型チェック..."
+Write-Info "型チェック..."
 try {
     npm run type-check 2>&1 | Out-Null
-    Print-Success "TypeScript: パス"
+    Write-Success "TypeScript: パス"
 } catch {
-    Print-Error "型エラーがあります"
+    Write-Failure "型エラーがあります"
     npm run type-check
     exit 1
 }
 
-Print-Info "ビルド..."
+Write-Info "ビルド..."
 try {
     npm run build 2>&1 | Out-Null
-    Print-Success "ビルド: 成功"
+    Write-Success "ビルド: 成功"
 } catch {
-    Print-Error "ビルドに失敗しました"
+    Write-Failure "ビルドに失敗しました"
     npm run build
     exit 1
 }
@@ -109,84 +113,76 @@ try {
 Write-Host ""
 
 # 3. バックエンドチェック（Goがある場合）
-try {
-    $goExists = Get-Command go -ErrorAction Stop
-    
+if ($goInstalled) {
     Write-Host "3️⃣  バックエンドチェック" -ForegroundColor Yellow
     Write-Host "-----------------------"
     
     Push-Location backend
     
-    Print-Info "Go モジュールのダウンロード..."
+    Write-Info "Go モジュールのダウンロード..."
     try {
         go mod download 2>&1 | Out-Null
-        Print-Success "Go モジュール: ダウンロード完了"
+        Write-Success "Go モジュール: ダウンロード完了"
     } catch {
-        Print-Error "Go モジュールのダウンロードに失敗しました"
+        Write-Failure "Go モジュールのダウンロードに失敗しました"
         Pop-Location
         exit 1
     }
     
-    Print-Info "テスト実行..."
+    Write-Info "テスト実行..."
     try {
         go test -v ./... 2>&1 | Out-Null
-        Print-Success "テスト: パス"
+        Write-Success "テスト: パス"
     } catch {
-        Print-Error "テストに失敗しました"
+        Write-Failure "テストに失敗しました"
         go test -v ./...
         Pop-Location
         exit 1
     }
     
-    Print-Info "ビルド..."
+    Write-Info "ビルド..."
     try {
         go build -v -o thinking-blocks-backend.exe 2>&1 | Out-Null
-        Print-Success "ビルド: 成功"
+        Write-Success "ビルド: 成功"
         Remove-Item thinking-blocks-backend.exe -ErrorAction SilentlyContinue
     } catch {
-        Print-Error "ビルドに失敗しました"
+        Write-Failure "ビルドに失敗しました"
         Pop-Location
         exit 1
     }
     
     Pop-Location
     Write-Host ""
-} catch {
-    # Go not installed, skip
 }
 
 # 4. Dockerビルドチェック（Dockerがある場合）
-try {
-    $dockerExists = Get-Command docker -ErrorAction Stop
-    
+if ($dockerInstalled) {
     Write-Host "4️⃣  Dockerビルドチェック" -ForegroundColor Yellow
     Write-Host "------------------------"
     
-    Print-Info "フロントエンドイメージのビルド..."
+    Write-Info "フロントエンドイメージのビルド..."
     try {
         docker build -t thinking-blocks-frontend:test . 2>&1 | Out-Null
-        Print-Success "フロントエンドイメージ: ビルド成功"
+        Write-Success "フロントエンドイメージ: ビルド成功"
         docker rmi thinking-blocks-frontend:test 2>&1 | Out-Null
     } catch {
-        Print-Error "フロントエンドイメージのビルドに失敗しました"
+        Write-Failure "フロントエンドイメージのビルドに失敗しました"
         exit 1
     }
     
     if (Test-Path "backend") {
-        Print-Info "バックエンドイメージのビルド..."
+        Write-Info "バックエンドイメージのビルド..."
         try {
             docker build -t thinking-blocks-backend:test ./backend 2>&1 | Out-Null
-            Print-Success "バックエンドイメージ: ビルド成功"
+            Write-Success "バックエンドイメージ: ビルド成功"
             docker rmi thinking-blocks-backend:test 2>&1 | Out-Null
         } catch {
-            Print-Error "バックエンドイメージのビルドに失敗しました"
+            Write-Failure "バックエンドイメージのビルドに失敗しました"
             exit 1
         }
     }
     
     Write-Host ""
-} catch {
-    # Docker not installed, skip
 }
 
 # 5. まとめ
@@ -198,4 +194,5 @@ Write-Host "2. git commit -m 'あなたのコミットメッセージ'"
 Write-Host "3. git push"
 Write-Host ""
 Write-Host "GitHub Actions で CI/CD パイプラインが自動実行されます"
-Write-Host "https://github.com/YOUR_USERNAME/YOUR_REPO/actions"
+Write-Host "https://github.com/furukawa1020/THINKING-BLOCKproto/actions"
+
