@@ -1,0 +1,60 @@
+# .dockerignore - Docker build時に除外するファイル
+
+# Node
+node_modules/
+npm-debug.log
+.npm
+.next/
+out/
+dist/
+
+# Go
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+vendor/
+
+# Environment
+.env
+.env.local
+.env.*.local
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docs
+README.md
+BACKEND.md
+*.md
+!CHANGELOG.md
+
+# Tests
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+coverage/
+.nyc_output/
+
+# Misc
+*.log
+logs/
+tmp/
+temp/
+.cache/
