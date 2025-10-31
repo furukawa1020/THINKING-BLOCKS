@@ -24,7 +24,7 @@ func (h *Handler) GetProjectsWithCache(c *gin.Context) {
 	// キャッシュから取得試行
 	var projects []database.Project
 	cacheManager := cache.NewCache(h.redis)
-	
+
 	err := cacheManager.GetOrSet(
 		cacheKey,
 		&projects,
