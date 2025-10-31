@@ -219,6 +219,35 @@ docker-compose up -d --build
 - **同時接続**: 1000+ユーザー対応
 - **データベース**: インデックス最適化済み
 
+詳細は [PERFORMANCE.md](.github/PERFORMANCE.md) を参照してください。
+
+## 🔄 CI/CD
+
+### GitHub Actions パイプライン
+
+[![CI/CD Pipeline](https://github.com/furukawa1020/THINKING-BLOCKproto/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/furukawa1020/THINKING-BLOCKproto/actions/workflows/ci-cd.yml)
+
+- ✅ **自動テスト**: フロントエンド・バックエンド両方
+- 🐳 **Dockerビルド**: マルチステージビルド最適化
+- 🔒 **セキュリティスキャン**: Trivyによる脆弱性検出
+- 📦 **アーティファクト管理**: ビルド成果物の保存
+- 🚀 **自動デプロイ**: mainブランチへのプッシュで自動実行（オプション）
+
+### ローカルでCI/CDチェック
+
+**Windows:**
+```powershell
+.\scripts\ci-check.ps1
+```
+
+**macOS/Linux:**
+```bash
+chmod +x scripts/ci-check.sh
+./scripts/ci-check.sh
+```
+
+詳細は [CI/CD設定ガイド](.github/CICD.md) を参照してください。
+
 ## 🤝 コントリビューション
 
 プルリクエスト大歓迎！
