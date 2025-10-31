@@ -32,9 +32,9 @@ func (h *Handler) HealthCheck(c *gin.Context) {
 	}
 
 	c.JSON(statusCode, gin.H{
-		"status":   getHealthStatus(healthy),
-		"database": getHealthStatus(dbHealthy),
-		"redis":    getHealthStatus(redisHealthy),
+		"status":    getHealthStatus(healthy),
+		"database":  getHealthStatus(dbHealthy),
+		"redis":     getHealthStatus(redisHealthy),
 		"timestamp": "2025-10-31T00:00:00Z",
 	})
 }
@@ -46,9 +46,9 @@ func (h *Handler) MetricsEndpoint(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"memory": gin.H{
-			"alloc":       m.Alloc / 1024 / 1024,       // MB
-			"total_alloc": m.TotalAlloc / 1024 / 1024,  // MB
-			"sys":         m.Sys / 1024 / 1024,         // MB
+			"alloc":       m.Alloc / 1024 / 1024,      // MB
+			"total_alloc": m.TotalAlloc / 1024 / 1024, // MB
+			"sys":         m.Sys / 1024 / 1024,        // MB
 			"num_gc":      m.NumGC,
 		},
 		"goroutines": runtime.NumGoroutine(),
