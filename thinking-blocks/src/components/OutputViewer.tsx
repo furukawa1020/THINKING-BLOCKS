@@ -69,15 +69,18 @@ export default function OutputViewer({ activeView, outputData, theme }: OutputVi
 
   const renderTextView = () => (
     <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200/50">
-        <h3 className="font-semibold text-gray-900">思考構文</h3>
+      <div className="flex items-center justify-between p-4 border-b border-gray-200/50 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+        <h3 className="font-bold text-lg flex items-center">
+          <span className="mr-2">📊</span>
+          実行結果
+        </h3>
         <div className="flex space-x-2">
           <button
             onClick={() => handleCopy(outputData.text)}
-            className={`flex items-center space-x-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+            className={`flex items-center space-x-1 px-4 py-2 text-sm font-medium rounded-lg transition-all shadow-md ${
               copySuccess 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-green-400 text-white' 
+                : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
             }`}
           >
             <Copy className="w-3 h-3" />
@@ -85,17 +88,28 @@ export default function OutputViewer({ activeView, outputData, theme }: OutputVi
           </button>
           <button
             onClick={() => handleDownload(outputData.text, 'thinking-structure.txt', 'text/plain')}
-            className="flex items-center space-x-1 px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+            className="flex items-center space-x-1 px-4 py-2 text-sm font-medium bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 rounded-lg transition-all shadow-md"
           >
-            <Download className="w-3 h-3" />
+            <Download className="w-4 h-4" />
             <span>ダウンロード</span>
           </button>
         </div>
       </div>
-      <div className="flex-1 overflow-auto">
-        <pre className={`p-4 text-sm font-mono leading-relaxed ${themeColors.bg} ${themeColors.text} whitespace-pre-wrap`}>
-          {outputData.text}
-        </pre>
+      <div className="flex-1 overflow-auto p-6 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="bg-white rounded-2xl shadow-2xl border-4 border-blue-300 p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h4 className="text-xl font-bold text-gray-800 flex items-center">
+              <span className="mr-2">🖥️</span>
+              コンソール出力
+            </h4>
+            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+              {new Date().toLocaleTimeString('ja-JP')}
+            </span>
+          </div>
+          <pre className="text-base font-mono leading-relaxed text-gray-900 whitespace-pre-wrap bg-gray-50 p-4 rounded-xl border-2 border-gray-200 min-h-[200px]">
+            {outputData.text || '(出力なし)\n\nブロックを実行すると、結果がここに表示されます。'}
+          </pre>
+        </div>
       </div>
     </div>
   );
@@ -105,33 +119,47 @@ export default function OutputViewer({ activeView, outputData, theme }: OutputVi
     
     return (
       <div className="h-full flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200/50">
-          <h3 className="font-semibold text-gray-900">構造データ</h3>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200/50 bg-gradient-to-r from-green-500 to-teal-600 text-white">
+          <h3 className="font-bold text-lg flex items-center">
+            <span className="mr-2">📊</span>
+            構造データ (JSON)
+          </h3>
           <div className="flex space-x-2">
             <button
               onClick={() => handleCopy(jsonString)}
-              className={`flex items-center space-x-1 px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+              className={`flex items-center space-x-1 px-4 py-2 text-sm font-medium rounded-lg transition-all shadow-md ${
                 copySuccess 
-                  ? 'bg-green-100 text-green-700' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-green-400 text-white' 
+                  : 'bg-white/20 backdrop-blur-sm text-white hover:bg-white/30'
               }`}
             >
-              <Copy className="w-3 h-3" />
+              <Copy className="w-4 h-4" />
               <span>{copySuccess ? 'コピー済み' : 'コピー'}</span>
             </button>
             <button
               onClick={() => handleDownload(jsonString, 'thinking-structure.json', 'application/json')}
-              className="flex items-center space-x-1 px-3 py-1 text-xs font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors"
+              className="flex items-center space-x-1 px-4 py-2 text-sm font-medium bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 rounded-lg transition-all shadow-md"
             >
-              <Download className="w-3 h-3" />
+              <Download className="w-4 h-4" />
               <span>ダウンロード</span>
             </button>
           </div>
         </div>
-        <div className="flex-1 overflow-auto">
-          <pre className="p-4 text-sm font-mono bg-gray-50 text-gray-800 whitespace-pre-wrap">
-            {jsonString}
-          </pre>
+        <div className="flex-1 overflow-auto p-6 bg-gradient-to-br from-gray-50 to-green-50">
+          <div className="bg-white rounded-2xl shadow-2xl border-4 border-green-300 p-6">
+            <div className="mb-4 flex items-center justify-between">
+              <h4 className="text-xl font-bold text-gray-800 flex items-center">
+                <span className="mr-2">🗂️</span>
+                JSON構造
+              </h4>
+              <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                {Object.keys(outputData.json || {}).length} keys
+              </span>
+            </div>
+            <pre className="text-sm font-mono bg-gray-50 text-gray-800 whitespace-pre-wrap p-4 rounded-xl border-2 border-gray-200 min-h-[200px]">
+              {jsonString || '{}'}
+            </pre>
+          </div>
         </div>
       </div>
     );

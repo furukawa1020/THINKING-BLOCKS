@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  reactCompiler: true,
+  reactCompiler: false, // Turbopack無効化のため一時的にfalse
   output: 'standalone',
   
   // Vercel最適化設定
