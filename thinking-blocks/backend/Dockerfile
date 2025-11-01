@@ -1,5 +1,5 @@
 # Go バックエンド用 Dockerfile
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # 作業ディレクトリの設定
 WORKDIR /app
